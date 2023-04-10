@@ -13,8 +13,8 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 // Abbout is the about page handler
 func About(w http.ResponseWriter, r *http.Request){
-	sum := addValues(2, 2)
-	_, _ = fmt.Fprintf(w, fmt.Sprintf("This is the about page and 2 + 2 is %d", sum))
+	sum := addValues(3, 2)
+	_, _ = fmt.Fprintf(w, fmt.Sprintf("This is the about page and 3 + 2 is %d", sum))
 }
 
 func addValues(x, y int) int {
