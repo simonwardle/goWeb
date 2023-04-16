@@ -8,19 +8,34 @@ import (
 	"text/template"
 
 	"github.com/simonwardle/goWeb/pkg/config"
+	"github.com/simonwardle/goWeb/pkg/models"
 )
 
 var app *config.AppConfig
 
-//NewTemplates sets the config for the template package
-func NewTemplates(a *config.AppConfig){
+// NewTemplates sets the config for the template package
+func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
+// AddDefaultData adds some default data to every page
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+	return td
+}
+
 // RenderTemplate renders a template
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
-	// get template cache from app config
-	tmplCache := app.TemplateCache
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
+	var tmplCache map[string]*template.Template
+	var err error
+	if app.UseTemplateCache {
+		// get template cache from app config
+		tmplCache = app.TemplateCache
+	} else {
+		tmplCache, err = CreateTemplateCache()
+		if err != nil {
+			log.Fatal("error: cannot load template cache!")
+		}
+	}
 
 	// get requested template from cache
 	t, ok := tmplCache[tmpl]
@@ -30,7 +45,9 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 
 	buf := new(bytes.Buffer)
 
-	err := t.Execute(buf, nil)
+	td = AddDefaultData(td)
+
+	err = t.Execute(buf, td)
 	if err != nil {
 		log.Println(err)
 	}

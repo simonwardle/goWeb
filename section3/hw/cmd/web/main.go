@@ -12,12 +12,12 @@ import (
 
 const portNumber = ":8080"
 
-
-
 // main is the main application starting point
 func main() {
 	var app config.AppConfig
 	var err error
+
+	app.UseTemplateCache = false
 
 	//populate app config template cache via render package
 	app.TemplateCache, err = render.CreateTemplateCache()
@@ -28,9 +28,18 @@ func main() {
 	//pass app config populated with template cache to render.
 	render.NewTemplates(&app)
 
-	http.HandleFunc("/", handlers.Home)
-	http.HandleFunc("/about", handlers.About)
+	repo := handlers.NewRepository(&app)
+	handlers.NewHandlers(repo)
 
 	_, _ = fmt.Println(fmt.Sprintf("Starting application on port %s", portNumber))
-	_ = http.ListenAndServe(portNumber, nil)
+
+	srv := http.Server{
+		Addr: portNumber,
+		Handler: routes(&app),
+	}
+
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
