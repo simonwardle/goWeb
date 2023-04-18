@@ -4,19 +4,33 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/alexedwards/scs/v2"
 	"github.com/simonwardle/goWeb/pkg/config"
 	"github.com/simonwardle/goWeb/pkg/handlers"
 	"github.com/simonwardle/goWeb/pkg/render"
 )
 
 const portNumber = ":8080"
+//declare here so it is available to entire main package
+var app config.AppConfig
+var session *scs.SessionManager
 
 // main is the main application starting point
 func main() {
-	var app config.AppConfig
 	var err error
+	//*********  Change this to true when going into Production **************
+	app.InProduction = false
 
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.InProduction
+
+	app.Session = session
+	
 	app.UseTemplateCache = false
 
 	//populate app config template cache via render package
